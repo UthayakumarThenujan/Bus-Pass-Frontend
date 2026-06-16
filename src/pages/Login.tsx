@@ -27,12 +27,12 @@ const Login = () => {
         localStorage.setItem('driverToken', token);
         localStorage.setItem('driverRouteId', user.routeId);
         localStorage.setItem('driverUsername', user.username);
-        navigate('/driver/scanner');
+        window.location.href = '/driver';
       } else {
         localStorage.setItem('token', token);
         // Setup axios default auth header for future requests
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        navigate('/');
+        window.location.href = '/';
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to login');
