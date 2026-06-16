@@ -1,10 +1,11 @@
-import { Map, Plus, Search, X } from 'lucide-react';
+import { Map, Plus, Search, X, Edit2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const RoutesPage = () => {
   const [routes, setRoutes] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
   
   // Form state
   const [routeNumber, setRouteNumber] = useState('');
@@ -26,23 +27,54 @@ const RoutesPage = () => {
     fetchRoutes();
   }, []);
 
-  const handleAddRoute = async (e: React.FormEvent) => {
+  const openAddModal = () => {
+    setEditingRouteId(null);
+    setRouteNumber('');
+    setStartPoint('');
+    setEndPoint('');
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (route: any) => {
+    setEditingRouteId(route.RouteID);
+    setRouteNumber(route.RouteNumber);
+    setStartPoint(route.StartPoint);
+    setEndPoint(route.EndPoint);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes`, {
-        routeNumber,
-        startPoint,
-        endPoint
-      }, {
+      if (editingRouteId) {
+        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes/${editingRouteId}`, {
+          routeNumber, startPoint, endPoint
+        }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes`, {
+          routeNumber, startPoint, endPoint
+        }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
+      setIsModalOpen(false);
+      fetchRoutes();
+    } catch (error: any) {
+      alert(error.response?.data?.message || `Failed to ${editingRouteId ? 'update' : 'add'} route`);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this route?')) return;
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setIsModalOpen(false);
-      setRouteNumber('');
-      setStartPoint('');
-      setEndPoint('');
-      fetchRoutes(); // Refresh list
-    } catch (error) {
-      alert('Failed to add route');
+      fetchRoutes();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to delete route');
     }
   };
 
@@ -54,7 +86,7 @@ const RoutesPage = () => {
           <p className="text-text-secondary mt-1">Add, edit, or view transport routes</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={openAddModal}
           className="btn-primary flex items-center space-x-2"
         >
           <Plus size={20} />
@@ -97,7 +129,10 @@ const RoutesPage = () => {
                   <td className="px-6 py-4 text-gray-600">{route.StartPoint}</td>
                   <td className="px-6 py-4 text-gray-600">{route.EndPoint}</td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-primary font-medium text-sm hover:underline">Edit</button>
+                    <div className="flex justify-end items-center space-x-3">
+                      <button onClick={() => openEditModal(route)} className="text-gray-400 hover:text-blue-600 transition-colors"><Edit2 size={16} /></button>
+                      <button onClick={() => handleDelete(route.RouteID)} className="text-gray-400 hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -111,12 +146,12 @@ const RoutesPage = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-surface rounded-3xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="text-lg font-bold">Add New Route</h3>
+              <h3 className="text-lg font-bold">{editingRouteId ? 'Edit Route' : 'Add New Route'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleAddRoute} className="p-6 space-y-4">
+            <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="text-sm font-medium text-text-secondary block mb-1">Route Number</label>
                 <input required value={routeNumber} onChange={e=>setRouteNumber(e.target.value)} className="input-field" placeholder="e.g. 101" />
@@ -131,7 +166,7 @@ const RoutesPage = () => {
               </div>
               <div className="pt-4 flex space-x-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 px-4 border border-gray-200 rounded-lg hover:bg-gray-50 font-medium">Cancel</button>
-                <button type="submit" className="flex-1 btn-primary">Save Route</button>
+                <button type="submit" className="flex-1 btn-primary">{editingRouteId ? 'Save Changes' : 'Save Route'}</button>
               </div>
             </form>
           </div>

@@ -1,4 +1,4 @@
-import { Plus, Search, X } from 'lucide-react';
+import { Plus, Search, X, Edit2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -6,11 +6,13 @@ const DriversPage = () => {
   const [drivers, setDrivers] = useState<any[]>([]);
   const [routes, setRoutes] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDriverId, setEditingDriverId] = useState<string | null>(null);
   
   // Form state
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [routeId, setRouteId] = useState('');
+  const [status, setStatus] = useState('ACTIVE');
 
   const fetchData = async () => {
     try {
@@ -29,21 +31,56 @@ const DriversPage = () => {
     fetchData();
   }, []);
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const openRegisterModal = () => {
+    setEditingDriverId(null);
+    setUsername('');
+    setPassword('');
+    setRouteId('');
+    setStatus('ACTIVE');
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (driver: any) => {
+    setEditingDriverId(driver.UserID);
+    setUsername(driver.Username);
+    setPassword(''); // don't load password hash
+    setRouteId(driver.RouteID || '');
+    setStatus(driver.Status);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/drivers`, {
-        username, password, routeId
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      if (editingDriverId) {
+        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/drivers/${editingDriverId}`, {
+          username, password, routeId, status
+        }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/drivers`, {
+          username, password, routeId
+        }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
       setIsModalOpen(false);
-      setUsername('');
-      setPassword('');
-      setRouteId('');
       fetchData();
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to register driver');
+      alert(error.response?.data?.message || `Failed to ${editingDriverId ? 'update' : 'register'} driver`);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this driver?')) return;
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/drivers/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      fetchData();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to delete driver');
     }
   };
 
@@ -54,7 +91,7 @@ const DriversPage = () => {
           <h1 className="text-2xl font-bold text-text-primary">Drivers</h1>
           <p className="text-text-secondary mt-1">Manage driver accounts and route assignments</p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="btn-primary flex items-center space-x-2">
+        <button onClick={openRegisterModal} className="btn-primary flex items-center space-x-2">
           <Plus size={20} />
           <span>Register Driver</span>
         </button>
@@ -75,11 +112,12 @@ const DriversPage = () => {
                 <th className="px-6 py-4 text-sm font-semibold text-text-secondary">Username</th>
                 <th className="px-6 py-4 text-sm font-semibold text-text-secondary">Route Assigned</th>
                 <th className="px-6 py-4 text-sm font-semibold text-text-secondary">Status</th>
+                <th className="px-6 py-4 text-sm font-semibold text-text-secondary text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {drivers.length === 0 ? (
-                <tr><td colSpan={3} className="text-center py-8 text-gray-500">No drivers found.</td></tr>
+                <tr><td colSpan={4} className="text-center py-8 text-gray-500">No drivers found.</td></tr>
               ) : drivers.map((driver) => (
                 <tr key={driver.UserID} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 flex items-center space-x-3">
@@ -94,6 +132,12 @@ const DriversPage = () => {
                       {driver.Status}
                     </span>
                   </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end items-center space-x-3">
+                      <button onClick={() => openEditModal(driver)} className="text-gray-400 hover:text-blue-600 transition-colors"><Edit2 size={16} /></button>
+                      <button onClick={() => handleDelete(driver.UserID)} className="text-gray-400 hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -105,17 +149,19 @@ const DriversPage = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-surface rounded-3xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="text-lg font-bold">Register Driver</h3>
+              <h3 className="text-lg font-bold">{editingDriverId ? 'Edit Driver' : 'Register Driver'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
-            <form onSubmit={handleRegister} className="p-6 space-y-4">
+            <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="text-sm font-medium text-text-secondary block mb-1">Username</label>
                 <input required value={username} onChange={e=>setUsername(e.target.value)} className="input-field" placeholder="e.g. driver_john" />
               </div>
               <div>
-                <label className="text-sm font-medium text-text-secondary block mb-1">Password</label>
-                <input required type="password" value={password} onChange={e=>setPassword(e.target.value)} className="input-field" placeholder="Enter secure password" />
+                <label className="text-sm font-medium text-text-secondary block mb-1">
+                  Password {editingDriverId && <span className="text-xs text-gray-400 font-normal">(Leave blank to keep current)</span>}
+                </label>
+                <input required={!editingDriverId} type="password" value={password} onChange={e=>setPassword(e.target.value)} className="input-field" placeholder={editingDriverId ? "••••••••" : "Enter secure password"} />
               </div>
               <div>
                 <label className="text-sm font-medium text-text-secondary block mb-1">Assign Route</label>
@@ -124,9 +170,20 @@ const DriversPage = () => {
                   {routes.map(r => <option key={r.RouteID} value={r.RouteID}>{r.RouteNumber} - {r.StartPoint} to {r.EndPoint}</option>)}
                 </select>
               </div>
+              {editingDriverId && (
+                <div>
+                  <label className="text-sm font-medium text-text-secondary block mb-1">Status</label>
+                  <select required value={status} onChange={e=>setStatus(e.target.value)} className="input-field bg-white">
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="SUSPENDED">SUSPENDED</option>
+                    <option value="EXPIRED">EXPIRED</option>
+                    <option value="BLOCKED">BLOCKED</option>
+                  </select>
+                </div>
+              )}
               <div className="pt-4 flex space-x-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 px-4 border border-gray-200 rounded-lg hover:bg-gray-50 font-medium">Cancel</button>
-                <button type="submit" className="flex-1 btn-primary">Register</button>
+                <button type="submit" className="flex-1 btn-primary">{editingDriverId ? 'Save Changes' : 'Register'}</button>
               </div>
             </form>
           </div>

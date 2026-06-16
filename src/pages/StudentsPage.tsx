@@ -1,4 +1,4 @@
-import { Plus, Search, X } from 'lucide-react';
+import { Plus, Search, X, Edit2, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -6,6 +6,7 @@ const StudentsPage = () => {
   const [students, setStudents] = useState<any[]>([]);
   const [routes, setRoutes] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
   
   // View Profile state
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
@@ -15,6 +16,7 @@ const StudentsPage = () => {
   const [school, setSchool] = useState('');
   const [contactNo, setContactNo] = useState('');
   const [routeId, setRouteId] = useState('');
+  const [status, setStatus] = useState('ACTIVE');
 
   const fetchData = async () => {
     try {
@@ -33,22 +35,58 @@ const StudentsPage = () => {
     fetchData();
   }, []);
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const openRegisterModal = () => {
+    setEditingStudentId(null);
+    setName('');
+    setSchool('');
+    setContactNo('');
+    setRouteId('');
+    setStatus('ACTIVE');
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (student: any) => {
+    setEditingStudentId(student.StudentID);
+    setName(student.Name);
+    setSchool(student.School);
+    setContactNo(student.ContactNo);
+    setRouteId(student.RouteID);
+    setStatus(student.Status);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students`, {
-        name, school, contactNo, routeId
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      if (editingStudentId) {
+        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students/${editingStudentId}`, {
+          name, school, contactNo, routeId, status
+        }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students`, {
+          name, school, contactNo, routeId
+        }, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      }
       setIsModalOpen(false);
-      setName('');
-      setSchool('');
-      setContactNo('');
-      setRouteId('');
       fetchData();
     } catch (error) {
-      alert('Failed to register student');
+      alert(`Failed to ${editingStudentId ? 'update' : 'register'} student`);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this student? This will also delete their tickets.')) return;
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      fetchData();
+    } catch (error) {
+      alert('Failed to delete student');
     }
   };
 
@@ -59,7 +97,7 @@ const StudentsPage = () => {
           <h1 className="text-2xl font-bold text-text-primary">Students</h1>
           <p className="text-text-secondary mt-1">Manage student profiles and route assignments</p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="btn-primary flex items-center space-x-2">
+        <button onClick={openRegisterModal} className="btn-primary flex items-center space-x-2">
           <Plus size={20} />
           <span>Register Student</span>
         </button>
@@ -103,7 +141,11 @@ const StudentsPage = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => setSelectedStudent(student)} className="text-primary font-medium text-sm hover:underline">View Profile</button>
+                    <div className="flex justify-end items-center space-x-3">
+                      <button onClick={() => setSelectedStudent(student)} className="text-primary font-medium text-sm hover:underline">View</button>
+                      <button onClick={() => openEditModal(student)} className="text-gray-400 hover:text-blue-600 transition-colors"><Edit2 size={16} /></button>
+                      <button onClick={() => handleDelete(student.StudentID)} className="text-gray-400 hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -116,10 +158,10 @@ const StudentsPage = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-surface rounded-3xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="text-lg font-bold">Register Student</h3>
+              <h3 className="text-lg font-bold">{editingStudentId ? 'Edit Student' : 'Register Student'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
-            <form onSubmit={handleRegister} className="p-6 space-y-4">
+            <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="text-sm font-medium text-text-secondary block mb-1">Full Name</label>
                 <input required value={name} onChange={e=>setName(e.target.value)} className="input-field" placeholder="e.g. John Doe" />
@@ -139,9 +181,20 @@ const StudentsPage = () => {
                   {routes.map(r => <option key={r.RouteID} value={r.RouteID}>{r.RouteNumber} - {r.StartPoint} to {r.EndPoint}</option>)}
                 </select>
               </div>
+              {editingStudentId && (
+                <div>
+                  <label className="text-sm font-medium text-text-secondary block mb-1">Status</label>
+                  <select required value={status} onChange={e=>setStatus(e.target.value)} className="input-field bg-white">
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="SUSPENDED">SUSPENDED</option>
+                    <option value="EXPIRED">EXPIRED</option>
+                    <option value="BLOCKED">BLOCKED</option>
+                  </select>
+                </div>
+              )}
               <div className="pt-4 flex space-x-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 px-4 border border-gray-200 rounded-lg hover:bg-gray-50 font-medium">Cancel</button>
-                <button type="submit" className="flex-1 btn-primary">Register</button>
+                <button type="submit" className="flex-1 btn-primary">{editingStudentId ? 'Save Changes' : 'Register'}</button>
               </div>
             </form>
           </div>
