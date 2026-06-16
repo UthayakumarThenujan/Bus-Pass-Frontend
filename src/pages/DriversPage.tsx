@@ -1,4 +1,4 @@
-import { Truck, Plus, Search, X } from 'lucide-react';
+import { Plus, Search, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 

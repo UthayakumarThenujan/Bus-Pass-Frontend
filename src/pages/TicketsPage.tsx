@@ -1,4 +1,4 @@
-import { Ticket, Plus, Search, QrCode, X, Download } from 'lucide-react';
+import { Plus, Search, QrCode, X, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 

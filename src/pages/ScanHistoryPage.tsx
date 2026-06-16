@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { History, Search, CheckCircle, XCircle } from 'lucide-react';
+import { Search, CheckCircle, XCircle } from 'lucide-react';
 import axios from 'axios';
 
 const ScanHistoryPage = () => {

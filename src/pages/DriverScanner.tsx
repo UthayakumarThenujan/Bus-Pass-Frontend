@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode';
-import { LogOut, BusFront, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 const DriverScanner = () => {
   const navigate = useNavigate();
-  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanResult, setScanResult] = useState<{ status: string; message: string; studentName?: string; qrSerialNo?: string } | null>(null);
   const [scanning, setScanning] = useState(true);
   const [validating, setValidating] = useState(false);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
@@ -14,7 +14,6 @@ const DriverScanner = () => {
 
   const routeId = localStorage.getItem('driverRouteId');
   const token = localStorage.getItem('driverToken');
-  const driverUsername = localStorage.getItem('driverUsername');
 
   useEffect(() => {
     if (!token || !routeId) {
@@ -70,7 +69,7 @@ const DriverScanner = () => {
     }
   };
 
-  const onScanFailure = (error: any) => {
+  const onScanFailure = (_error: any) => {
     // Ignore scan failures
   };
 
