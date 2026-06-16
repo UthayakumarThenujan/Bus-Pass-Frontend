@@ -17,8 +17,8 @@ const DriversPage = () => {
   const fetchData = async () => {
     try {
       const [driversRes, routesRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/drivers`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+        axios.get(`https://bus-pass-backend-production.up.railway.app/api/drivers`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        axios.get(`https://bus-pass-backend-production.up.railway.app/api/routes`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       ]);
       setDrivers(driversRes.data);
       setRoutes(routesRes.data);
@@ -53,13 +53,13 @@ const DriversPage = () => {
     e.preventDefault();
     try {
       if (editingDriverId) {
-        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/drivers/${editingDriverId}`, {
+        await axios.put(`https://bus-pass-backend-production.up.railway.app/api/drivers/${editingDriverId}`, {
           username, password, routeId, status
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/drivers`, {
+        await axios.post(`https://bus-pass-backend-production.up.railway.app/api/drivers`, {
           username, password, routeId
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -75,7 +75,7 @@ const DriversPage = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this driver?')) return;
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/drivers/${id}`, {
+      await axios.delete(`https://bus-pass-backend-production.up.railway.app/api/drivers/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchData();

@@ -51,7 +51,7 @@ const DriverScanner = () => {
     setValidating(true);
     
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/validation`, {
+      const response = await axios.post(`https://bus-pass-backend-production.up.railway.app/api/validation`, {
         encryptedQrData: decodedText,
         routeId
       }, {

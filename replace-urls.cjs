@@ -12,14 +12,13 @@ function processFiles(dir) {
     } else if (fullPath.endsWith('.tsx') || fullPath.endsWith('.ts')) {
       let content = fs.readFileSync(fullPath, 'utf8');
       
-      // Replace 'http://localhost:5000/api/...' with `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/...`
-      const updatedContent = content.replace(/'http:\/\/localhost:5000([^']*)'/g, "`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}$1`");
-      
-      // Also handle backticks if any `http://localhost:5000/api/tickets/${id}` -> `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/tickets/${id}`
-      const updatedContent2 = updatedContent.replace(/`http:\/\/localhost:5000([^`]+)`/g, "`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}$1`");
+      // Replace `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}` with `https://bus-pass-backend-production.up.railway.app`
+      const searchString = "\\$\\{import\\.meta\\.env\\.VITE_API_URL \\|\\| 'http://localhost:5000'\\}";
+      const regex = new RegExp(searchString, 'g');
+      const updatedContent = content.replace(regex, "https://bus-pass-backend-production.up.railway.app");
 
-      if (content !== updatedContent2) {
-        fs.writeFileSync(fullPath, updatedContent2, 'utf8');
+      if (content !== updatedContent) {
+        fs.writeFileSync(fullPath, updatedContent, 'utf8');
         console.log('Updated:', fullPath);
       }
     }

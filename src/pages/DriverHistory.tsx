@@ -7,7 +7,7 @@ const DriverHistory = () => {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/validation/history`, {
+      const response = await axios.get(`https://bus-pass-backend-production.up.railway.app/api/validation/history`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('driverToken')}` }
       });
       setLogs(response.data);

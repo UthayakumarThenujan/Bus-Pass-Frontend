@@ -21,8 +21,8 @@ const StudentsPage = () => {
   const fetchData = async () => {
     try {
       const [studentsRes, routesRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+        axios.get(`https://bus-pass-backend-production.up.railway.app/api/students`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        axios.get(`https://bus-pass-backend-production.up.railway.app/api/routes`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       ]);
       setStudents(studentsRes.data);
       setRoutes(routesRes.data);
@@ -59,13 +59,13 @@ const StudentsPage = () => {
     e.preventDefault();
     try {
       if (editingStudentId) {
-        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students/${editingStudentId}`, {
+        await axios.put(`https://bus-pass-backend-production.up.railway.app/api/students/${editingStudentId}`, {
           name, school, contactNo, routeId, status
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students`, {
+        await axios.post(`https://bus-pass-backend-production.up.railway.app/api/students`, {
           name, school, contactNo, routeId
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -81,7 +81,7 @@ const StudentsPage = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this student? This will also delete their tickets.')) return;
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students/${id}`, {
+      await axios.delete(`https://bus-pass-backend-production.up.railway.app/api/students/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchData();

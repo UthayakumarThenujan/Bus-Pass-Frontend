@@ -8,7 +8,7 @@ const ScanHistoryPage = () => {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/validation/all-history`, {
+      const response = await axios.get(`https://bus-pass-backend-production.up.railway.app/api/validation/all-history`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setLogs(response.data);

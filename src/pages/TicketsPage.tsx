@@ -24,9 +24,9 @@ const TicketsPage = () => {
   const fetchData = async () => {
     try {
       const [ticketsRes, studentsRes, routesRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/tickets`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/students`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
-        axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+        axios.get(`https://bus-pass-backend-production.up.railway.app/api/tickets`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        axios.get(`https://bus-pass-backend-production.up.railway.app/api/students`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
+        axios.get(`https://bus-pass-backend-production.up.railway.app/api/routes`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       ]);
       setTickets(ticketsRes.data);
       setStudents(studentsRes.data);
@@ -64,13 +64,13 @@ const TicketsPage = () => {
     e.preventDefault();
     try {
       if (editingTicketId) {
-        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/tickets/${editingTicketId}`, {
+        await axios.put(`https://bus-pass-backend-production.up.railway.app/api/tickets/${editingTicketId}`, {
           validFrom, validTo, status
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/tickets`, {
+        await axios.post(`https://bus-pass-backend-production.up.railway.app/api/tickets`, {
           studentId, routeId, validFrom, validTo
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -86,7 +86,7 @@ const TicketsPage = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this ticket?')) return;
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/tickets/${id}`, {
+      await axios.delete(`https://bus-pass-backend-production.up.railway.app/api/tickets/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchData();
@@ -97,7 +97,7 @@ const TicketsPage = () => {
 
   const handleViewQr = async (ticket: any) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/tickets/${ticket.TicketID}/qr`, {
+      const response = await axios.get(`https://bus-pass-backend-production.up.railway.app/api/tickets/${ticket.TicketID}/qr`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setSelectedQrUrl(response.data.qrCode);

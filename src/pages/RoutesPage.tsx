@@ -14,7 +14,7 @@ const RoutesPage = () => {
 
   const fetchRoutes = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes`, {
+      const response = await axios.get(`https://bus-pass-backend-production.up.railway.app/api/routes`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setRoutes(response.data);
@@ -47,13 +47,13 @@ const RoutesPage = () => {
     e.preventDefault();
     try {
       if (editingRouteId) {
-        await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes/${editingRouteId}`, {
+        await axios.put(`https://bus-pass-backend-production.up.railway.app/api/routes/${editingRouteId}`, {
           routeNumber, startPoint, endPoint
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
       } else {
-        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes`, {
+        await axios.post(`https://bus-pass-backend-production.up.railway.app/api/routes`, {
           routeNumber, startPoint, endPoint
         }, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -69,7 +69,7 @@ const RoutesPage = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this route?')) return;
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/routes/${id}`, {
+      await axios.delete(`https://bus-pass-backend-production.up.railway.app/api/routes/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchRoutes();

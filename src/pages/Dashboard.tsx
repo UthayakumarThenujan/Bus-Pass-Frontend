@@ -35,7 +35,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/dashboard/stats`, {
+        const response = await axios.get(`https://bus-pass-backend-production.up.railway.app/api/dashboard/stats`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setStats(response.data);
