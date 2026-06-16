@@ -78,7 +78,7 @@ const DriverScanner = () => {
     setScanning(true);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     if (status === 'VALID') return 'bg-green-500 text-white';
     if (status === 'ERROR') return 'bg-red-500 text-white';
     return 'bg-red-500 text-white'; 
